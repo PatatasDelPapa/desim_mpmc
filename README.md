@@ -1,5 +1,5 @@
 # desim_mpmc
-A benchmark of a model of multiple producers and consumers with bounded capacity using the desim library.
+A benchmark (not yet) of a model of multiple producers and consumers with bounded capacity using the desim library.
 
 ## Requirements
 The desim library requires a nightly compiler to set it you can use `rustup override set nightly`
