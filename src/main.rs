@@ -1,5 +1,5 @@
 #![feature(generators, generator_trait)]
-
+#![allow(unused)]
 use std::{cell::Cell, rc::Rc};
 
 use desim::{Simulation, Effect};

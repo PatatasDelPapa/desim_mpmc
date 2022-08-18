@@ -25,6 +25,7 @@ impl<V> StateKey<V> {
     }
 
     #[must_use]
+    #[allow(dead_code)]
     pub fn id(self) -> usize {
         self.id
     }
@@ -44,6 +45,7 @@ impl State {
         StateKey::new(id)
     }
 
+    #[allow(dead_code)]
     pub fn remove<V: 'static>(&mut self, key: StateKey<V>) -> Option<V> {
         // if self.store.get(key.id).is_some() {
         //     self.store
@@ -75,8 +77,7 @@ impl State {
 
         self.store
             .get(key.id)
-            .map(Option::as_ref)
-            .flatten()
+            .and_then(Option::as_ref)
             .map(|value| value.downcast_ref::<V>().expect("Ensured by the key type."))
     }
 
@@ -97,8 +98,7 @@ impl State {
 
         self.store
             .get_mut(key.id)
-            .map(Option::as_mut)
-            .flatten()
+            .and_then(Option::as_mut)
             .map(|value| value.downcast_mut::<V>().expect("Ensured by the key type."))
     }
 
