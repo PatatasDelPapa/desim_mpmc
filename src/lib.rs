@@ -65,7 +65,8 @@ pub fn producer_factory(
             passivated_list,
             count_key,
             producer_key,
-        ));          let producer_id = state.get_mut(producer_key).unwrap();
+        ));          
+        let producer_id = state.get_mut(producer_key).unwrap();
         *producer_id = producer;
         simulation.schedule_event(0.0, producer, Effect::TimeOut(0.));
     }

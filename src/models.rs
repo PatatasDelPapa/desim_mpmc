@@ -71,7 +71,7 @@ pub fn producer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
                     
                     if let Some(consumer_id) = passivated_list.consumers.pop_front() {
                         shared_state.set(state);
-                            println!("Producer {} -> Activate To Consumer {}", self_id, consumer_id);
+                        println!("Producer {} -> Activate To Consumer {}", self_id, consumer_id);
                         yield Effect::Event { time: 0.0,  process: consumer_id  };
                         println!("Producer {} <- Passivate", self_id);
                     } else {

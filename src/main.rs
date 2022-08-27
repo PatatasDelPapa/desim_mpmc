@@ -4,5 +4,5 @@
 use desim_mpmc::simulation;
 
 fn main() {
-    simulation(7.0, 2, 3);
+    simulation(10.0, 2, 3);
 }
