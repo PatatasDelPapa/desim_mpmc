@@ -57,9 +57,9 @@ pub fn producer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
                     *count += produce_amount;
                     shared_state.set(state);
                     
-                    println!("Producer {} -> HOLD", self_id);
+                    // println!("Producer {} -> HOLD", self_id);
                     yield Effect::Event { time: hold_time, process: self_id };
-                    println!("Producer {} <- HOLD", self_id);
+                    // println!("Producer {} <- HOLD", self_id);
                 },
                 Ordering::Equal | 
                 Ordering::Greater => {
@@ -71,15 +71,15 @@ pub fn producer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
                     
                     if let Some(consumer_id) = passivated_list.consumers.pop_front() {
                         shared_state.set(state);
-                        println!("Producer {} -> Activate To Consumer {}", self_id, consumer_id);
+                    //     println!("Producer {} -> Activate To Consumer {}", self_id, consumer_id);
                         yield Effect::Event { time: 0.0,  process: consumer_id  };
-                        println!("Producer {} <- Passivate", self_id);
+                    //     println!("Producer {} <- Passivate", self_id);
                     } else {
                         shared_state.set(state);
                         
-                        println!("Producer {} -> Passivate", self_id);
+                    //     println!("Producer {} -> Passivate", self_id);
                         yield Effect::Wait;
-                        println!("Producer {} <- Passivate", self_id);
+                    //     println!("Producer {} <- Passivate", self_id);
                     }
                 }
             }
@@ -124,24 +124,24 @@ pub fn consumer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
                     *count -= consume_amount;
                     shared_state.set(state);
                     
-                    println!("Consumer {} -> HOLD", self_id);
+                    // println!("Consumer {} -> HOLD", self_id);
                     yield Effect::Event { time: hold_time, process: self_id };
-                    println!("Consumer {} <- HOLD", self_id);
+                    // println!("Consumer {} <- HOLD", self_id);
                 }, 
                 Ordering::Less => {
                     let passivated_list = state.get_mut(passivated_key).unwrap();
                     passivated_list.consumers.push_back(self_id);
                     if let Some(producer_id) = passivated_list.producers.pop_front() {
                         shared_state.set(state);
-                            println!("Consumer {} -> Activate to Producer {}", self_id, producer_id);
+                    //         println!("Consumer {} -> Activate to Producer {}", self_id, producer_id);
                         yield Effect::Event { time: 0.0, process: producer_id };
-                        println!("Consumer {} <- Passivate", self_id);
+                    //     println!("Consumer {} <- Passivate", self_id);
                     } else {
                         shared_state.set(state);
                         
-                        println!("Consumer {} -> Passivate", self_id);
+                    //     println!("Consumer {} -> Passivate", self_id);
                         yield Effect::Wait;
-                        println!("Consumer {} <- Passivate", self_id);
+                    //     println!("Consumer {} <- Passivate", self_id);
                     }
                 }
             }

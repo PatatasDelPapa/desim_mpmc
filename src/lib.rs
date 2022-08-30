@@ -10,13 +10,13 @@ mod models;
 mod state;
 
 pub fn simulation(limit: f64, producers: u8, consumers: u8) {
-    let (simulation, shared_state, count_key) = set_simulation(producers, consumers);
-    let simulation = simulation.run(desim::EndCondition::Time(limit));
-    let mut state = shared_state.take();
-    let count = state.remove(count_key).unwrap();
-    println!("Final Results:");
-    println!("\tCount: {}", count);
-    println!("\tTime: {}", simulation.time());
+    let (simulation, _shared_state, _count_key) = set_simulation(producers, consumers);
+    let _simulation = simulation.run(desim::EndCondition::Time(limit));
+    // let mut state = shared_state.take();
+    // let count = state.remove(count_key).unwrap();
+    // println!("Final Results:");
+    // println!("\tCount: {}", count);
+    // println!("\tTime: {}", simulation.time());
 }
 
 pub fn set_simulation(producers: u8, consumers: u8) -> (Simulation<Effect>, Rc<Cell<State>>, StateKey<usize>) {

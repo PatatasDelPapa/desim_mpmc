@@ -13,5 +13,12 @@ path = "src/lib.rs"
 name = "main"
 path = "src/main.rs"
 
+[[bench]]
+name = "bench"
+harness = false
+
 [dependencies]
 desim = "0.2"
+
+[dev-dependencies]
+criterion = "0.3.5"
