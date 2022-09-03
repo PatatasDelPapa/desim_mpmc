@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 use desim_mpmc::simulation;
@@ -12,5 +14,9 @@ fn bench(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench);
+criterion_group!(
+    name = benches;
+    config = Criterion::default().measurement_time(Duration::from_secs(100));
+    targets = bench
+);
 criterion_main!(benches);

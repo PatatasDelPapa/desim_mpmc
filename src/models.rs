@@ -1,6 +1,11 @@
-use std::{rc::Rc, cell::Cell, cmp::{Ord, Ordering}, collections::VecDeque};
+use std::{
+    cell::Cell,
+    cmp::{Ord, Ordering},
+    collections::VecDeque,
+    rc::Rc,
+};
 
-use desim::{SimGen, Effect, ProcessId, SimContext};
+use desim::{Effect, ProcessId, SimContext, SimGen};
 
 use crate::state::{State, StateKey};
 
@@ -18,7 +23,12 @@ impl PassivatedList {
         }
     }
 }
-pub fn producer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<PassivatedList>, count_key: StateKey<usize>, self_id: StateKey<usize>) -> Box<SimGen<Effect>> {
+pub fn producer(
+    shared_state: Rc<Cell<State>>,
+    passivated_key: StateKey<PassivatedList>,
+    count_key: StateKey<usize>,
+    self_id: StateKey<usize>,
+) -> Box<SimGen<Effect>> {
     Box::new(move |_e: SimContext<Effect>| {
         let produce_amount = 1;
         let hold_time = 1.0;
@@ -48,38 +58,43 @@ pub fn producer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
             ////////////////////////////////////
             // -------- END HACK CHECK ---------
             ////////////////////////////////////
-            
+
             // Take the state out of the Rc<Cell<State>>
             let mut state = shared_state.take();
             let count = state.get_mut(count_key).unwrap();
-            match (*count).cmp(&limit)  {
+            match (*count).cmp(&limit) {
                 Ordering::Less => {
                     *count += produce_amount;
                     shared_state.set(state);
-                    
+
                     // println!("Producer {} -> HOLD", self_id);
-                    yield Effect::Event { time: hold_time, process: self_id };
+                    yield Effect::Event {
+                        time: hold_time,
+                        process: self_id,
+                    };
                     // println!("Producer {} <- HOLD", self_id);
-                },
-                Ordering::Equal | 
-                Ordering::Greater => {
+                }
+                Ordering::Equal | Ordering::Greater => {
                     // Check if someone is in Passivate
                     // If true then Change to Passivate and send Event
                     // else change to Passivate and do Wait
                     let passivated_list = state.get_mut(passivated_key).unwrap();
                     passivated_list.producers.push_back(self_id);
-                    
+
                     if let Some(consumer_id) = passivated_list.consumers.pop_front() {
                         shared_state.set(state);
-                    //     println!("Producer {} -> Activate To Consumer {}", self_id, consumer_id);
-                        yield Effect::Event { time: 0.0,  process: consumer_id  };
+                        //     println!("Producer {} -> Activate To Consumer {}", self_id, consumer_id);
+                        yield Effect::Event {
+                            time: 0.0,
+                            process: consumer_id,
+                        };
                     //     println!("Producer {} <- Passivate", self_id);
                     } else {
                         shared_state.set(state);
-                        
-                    //     println!("Producer {} -> Passivate", self_id);
+
+                        //     println!("Producer {} -> Passivate", self_id);
                         yield Effect::Wait;
-                    //     println!("Producer {} <- Passivate", self_id);
+                        //     println!("Producer {} <- Passivate", self_id);
                     }
                 }
             }
@@ -87,7 +102,12 @@ pub fn producer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
     })
 }
 
-pub fn consumer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<PassivatedList>, count_key: StateKey<usize>, self_id: StateKey<usize>) -> Box<SimGen<Effect>> {
+pub fn consumer(
+    shared_state: Rc<Cell<State>>,
+    passivated_key: StateKey<PassivatedList>,
+    count_key: StateKey<usize>,
+    self_id: StateKey<usize>,
+) -> Box<SimGen<Effect>> {
     Box::new(move |_e: SimContext<Effect>| {
         let consume_amount = 5;
         let hold_time = 4.0;
@@ -123,29 +143,34 @@ pub fn consumer(shared_state: Rc<Cell<State>>, passivated_key: StateKey<Passivat
                 Ordering::Greater | Ordering::Equal => {
                     *count -= consume_amount;
                     shared_state.set(state);
-                    
+
                     // println!("Consumer {} -> HOLD", self_id);
-                    yield Effect::Event { time: hold_time, process: self_id };
+                    yield Effect::Event {
+                        time: hold_time,
+                        process: self_id,
+                    };
                     // println!("Consumer {} <- HOLD", self_id);
-                }, 
+                }
                 Ordering::Less => {
                     let passivated_list = state.get_mut(passivated_key).unwrap();
                     passivated_list.consumers.push_back(self_id);
                     if let Some(producer_id) = passivated_list.producers.pop_front() {
                         shared_state.set(state);
-                    //         println!("Consumer {} -> Activate to Producer {}", self_id, producer_id);
-                        yield Effect::Event { time: 0.0, process: producer_id };
+                        //         println!("Consumer {} -> Activate to Producer {}", self_id, producer_id);
+                        yield Effect::Event {
+                            time: 0.0,
+                            process: producer_id,
+                        };
                     //     println!("Consumer {} <- Passivate", self_id);
                     } else {
                         shared_state.set(state);
-                        
-                    //     println!("Consumer {} -> Passivate", self_id);
+
+                        //     println!("Consumer {} -> Passivate", self_id);
                         yield Effect::Wait;
-                    //     println!("Consumer {} <- Passivate", self_id);
+                        //     println!("Consumer {} <- Passivate", self_id);
                     }
                 }
             }
         }
     })
 }
-
