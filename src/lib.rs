@@ -2,8 +2,8 @@
 // #![allow(unused)]
 use std::{cell::Cell, rc::Rc};
 
-use desim::{Simulation, Effect};
-use models::{producer, PassivatedList, consumer};
+use desim::{Effect, Simulation};
+use models::{consumer, producer, PassivatedList};
 use state::{State, StateKey};
 
 mod models;
@@ -19,7 +19,10 @@ pub fn simulation(limit: f64, producers: u8, consumers: u8) {
     // println!("\tTime: {}", simulation.time());
 }
 
-pub fn set_simulation(producers: u8, consumers: u8) -> (Simulation<Effect>, Rc<Cell<State>>, StateKey<usize>) {
+pub fn set_simulation(
+    producers: u8,
+    consumers: u8,
+) -> (Simulation<Effect>, Rc<Cell<State>>, StateKey<usize>) {
     let mut simulation = Simulation::new();
     let shared_state = Rc::new(Cell::new(State::default()));
 
@@ -28,9 +31,9 @@ pub fn set_simulation(producers: u8, consumers: u8) -> (Simulation<Effect>, Rc<C
 
     let passivated_list = PassivatedList::default();
     let passivated_list = state.insert(passivated_list);
-    
+
     shared_state.set(state);
-    
+
     producer_factory(
         Rc::clone(&shared_state),
         producers,
@@ -38,7 +41,7 @@ pub fn set_simulation(producers: u8, consumers: u8) -> (Simulation<Effect>, Rc<C
         passivated_list,
         &mut simulation,
     );
-        
+
     consumer_factory(
         Rc::clone(&shared_state),
         consumers,
@@ -46,26 +49,26 @@ pub fn set_simulation(producers: u8, consumers: u8) -> (Simulation<Effect>, Rc<C
         passivated_list,
         &mut simulation,
     );
-            
+
     (simulation, shared_state, count_key)
 }
 
 pub fn producer_factory(
-    shared_state: Rc<Cell<State>>, 
-    quantity: u8, 
-    count_key: StateKey<usize>, 
+    shared_state: Rc<Cell<State>>,
+    quantity: u8,
+    count_key: StateKey<usize>,
     passivated_list: StateKey<PassivatedList>,
     simulation: &mut Simulation<Effect>,
 ) {
     let mut state = shared_state.take();
     for _ in 0..quantity {
-        let producer_key = state.insert(usize::MAX);        
+        let producer_key = state.insert(usize::MAX);
         let producer = simulation.create_process(producer(
             Rc::clone(&shared_state),
             passivated_list,
             count_key,
             producer_key,
-        ));          
+        ));
         let producer_id = state.get_mut(producer_key).unwrap();
         *producer_id = producer;
         simulation.schedule_event(0.0, producer, Effect::TimeOut(0.));
@@ -74,9 +77,9 @@ pub fn producer_factory(
 }
 
 pub fn consumer_factory(
-    shared_state: Rc<Cell<State>>, 
-    quantity: u8, 
-    count_key: StateKey<usize>, 
+    shared_state: Rc<Cell<State>>,
+    quantity: u8,
+    count_key: StateKey<usize>,
     passivated_list: StateKey<PassivatedList>,
     simulation: &mut Simulation<Effect>,
 ) {
@@ -88,7 +91,7 @@ pub fn consumer_factory(
             passivated_list,
             count_key,
             consumer_key,
-        ));  
+        ));
         let consumer_id = state.get_mut(consumer_key).unwrap();
         *consumer_id = consumer;
         simulation.schedule_event(0.0, consumer, Effect::TimeOut(0.));
